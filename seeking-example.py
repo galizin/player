@@ -98,6 +98,8 @@ class GTK_Main:
           pos_int = self.player_query(self.player, 'pos')
           pos_str = self.convert_ns(pos_int)
           self.time_label.set_text(pos_str + " / " + dur_str)
+          if dur_int != 0:
+            self.h_scale.set_value(pos_int * 100 / dur_int)
           time.sleep(1)
                 
     def on_message(self, bus, message):
