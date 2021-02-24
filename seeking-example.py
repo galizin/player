@@ -52,19 +52,6 @@ class GTK_Main:
         self.player = Gst.ElementFactory.make("playbin", "player")
         fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
         self.player.set_property("video-sink", fakesink)
-        #self.player = Gst.Pipeline.new("player")
-        #source = Gst.ElementFactory.make("filesrc", "file-source")
-        #demuxer = Gst.ElementFactory.make("oggdemux", "demuxer")
-        #demuxer.connect("pad-added", self.demuxer_callback)
-        #self.audio_decoder = Gst.ElementFactory.make("vorbisdec", "vorbis-decoder")
-        #audioconv = Gst.ElementFactory.make("audioconvert", "converter")
-        #audiosink = Gst.ElementFactory.make("autoaudiosink", "audio-output")
-        
-        #for ele in [source, demuxer, self.audio_decoder, audioconv, audiosink]:
-        #   self.player.add(ele)
-        #source.link(demuxer)
-        #self.audio_decoder.link(audioconv)
-        #audioconv.link(audiosink)
         
         bus = self.player.get_bus()
         bus.add_signal_watch()
@@ -76,7 +63,6 @@ class GTK_Main:
             if os.path.isfile(filepath):
                 filepath = os.path.realpath(filepath)
                 self.button.set_label("Stop")
-                #self.player.get_by_name("file-source").set_property("location", filepath)
                 self.player.set_property("uri", "file://" + filepath)
                 self.player.set_state(Gst.State.PLAYING)
                 self.play_thread_id = _thread.start_new_thread(self.play_thread, ())
@@ -96,46 +82,22 @@ class GTK_Main:
           return _player.query_position(Gst.Format.TIME)[1]
 
     def play_thread(self):
-        #play_thread_id = self.play_thread_id
-        #Gdk.threads_enter()
         self.time_label.set_text("00:00 / 00:00")
-        #print("00:00 / 00:00")
-        #Gdk.threads_leave()
-        #GLib.idle_add(self.change_label, "00:00 / 00:00")
-        
-        #while play_thread_id == self.play_thread_id:
         while 1==1:
-          #try:
               time.sleep(0.2)
               dur_int = self.player_query(self.player, 'dur')
-              #dur_int = self.player.query_duration(Gst.Format.TIME)[0]
               if dur_int == -1:
                   print("duration not detected")
                   continue
-              #print(dur_int)
               dur_str = self.convert_ns(dur_int)
-              #Gdk.threads_enter()
               self.time_label.set_text("00:00 / " + dur_str)
-              #print("00:00 / " + dur_str)
-              #Gdk.threads_leave()
-              #GLib.idle_add(self.change_label, "00:00 / " + dur_str)
               break
-          #except:
-              #pass
                 
         time.sleep(0.2)
         while self.play_thread_id != None:
-        #while play_thread_id == self.play_thread_id:
           pos_int = self.player_query(self.player, 'pos')
-          #pos_int = self.player.query_position(Gst.Format.TIME, None)[0]
-          #print(pos_int)
           pos_str = self.convert_ns(pos_int)
-          #if play_thread_id == self.play_thread_id:
-              #Gdk.threads_enter()
           self.time_label.set_text(pos_str + " / " + dur_str)
-          #print(pos_str + " / " + dur_str)
-              #Gdk.threads_leave()
-              #GLib.idle_add(self.change_label, pos_str + " / " + dur_str)
           time.sleep(1)
                 
     def on_message(self, bus, message):
@@ -172,8 +134,6 @@ class GTK_Main:
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, seek_ns)
         
     def convert_ns(self, t):
-        # This method was submitted by Sam Mason.
-        # It's much shorter than the original one.
         s,ns = divmod(t, 1000000000)
         m,s = divmod(s, 60)
         
@@ -183,7 +143,6 @@ class GTK_Main:
             h,m = divmod(m, 60)
             return "%i:%02i:%02i" %(h,m,s)
             
-#GObject.threads_init()
 Gst.init(None)        
 GTK_Main()
 Gtk.main()
