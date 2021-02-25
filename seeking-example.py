@@ -19,7 +19,19 @@ class GTK_Main:
         self.window.add(vbox)
         self.entry = Gtk.Entry()
         self.entry.set_text("file:///home/userx/tlc.flac")
-        vbox.pack_start(self.entry, True, True, 0)
+        self.playlist = Gtk.ListStore(bool, str)
+        self.playlist_disp = Gtk.TreeView(model=self.playlist)
+        for i, column_title in enumerate(
+            ["x", "uri"]
+        ):
+            renderer = Gtk.CellRendererText()
+            column = Gtk.TreeViewColumn(column_title, renderer, text=i)
+            self.playlist_disp.append_column(column)
+        self.scrollable_playlist = Gtk.ScrolledWindow()
+        self.scrollable_playlist.set_vexpand(True)
+        self.scrollable_playlist.add(self.playlist_disp)
+        vbox.pack_start(self.scrollable_playlist, True, True, 0)
+        vbox.pack_end(self.entry, False, False, 0)
         hbox = Gtk.HBox()
         #hbox2 = Gtk.HBox()
         #vbox.add(hbox2)
