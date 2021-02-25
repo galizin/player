@@ -6,6 +6,7 @@ import gi
 gi.require_version("Gst", "1.0")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gst, GObject, Gtk, Gdk, GLib
+from urllib.parse import urlparse, unquote
 
 class GTK_Main:
       
@@ -17,7 +18,7 @@ class GTK_Main:
         vbox = Gtk.VBox()
         self.window.add(vbox)
         self.entry = Gtk.Entry()
-        self.entry.set_text("/home/userx/tlc.flac")
+        self.entry.set_text("file:///home/userx/tlc.flac")
         vbox.pack_start(self.entry, True, True, 0)
         hbox = Gtk.HBox()
         #hbox2 = Gtk.HBox()
@@ -76,7 +77,7 @@ class GTK_Main:
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            self.entry.set_text(dialog.get_filename())
+            self.entry.set_text(dialog.get_uri())
             #print("Open clicked")
             #print("File selected: " + dialog.get_filename())
         #elif response == Gtk.ResponseType.CANCEL:
@@ -87,11 +88,12 @@ class GTK_Main:
         
     def start_stop(self, w):
         if self.button.get_label() == "Start":
-            filepath = self.entry.get_text().strip()
-            if os.path.isfile(filepath):
-                filepath = os.path.realpath(filepath)
+            fileuri = self.entry.get_text() #.strip()
+            #p = urlparse(fileuri)
+            if os.path.isfile(unquote(urlparse(fileuri).path)):
+                #filepath = os.path.realpath(filepath)
                 self.button.set_label("Stop")
-                self.player.set_property("uri", "file://" + filepath)
+                self.player.set_property("uri", fileuri)
                 self.player.set_state(Gst.State.PLAYING)
                 self.play_thread_id = _thread.start_new_thread(self.play_thread, ())
         else:
