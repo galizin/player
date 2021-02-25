@@ -10,12 +10,12 @@ from gi.repository import Gst, GObject, Gtk, Gdk, GLib
 class GTK_Main:
       
     def __init__(self):
-        window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
-        window.set_title("Player")
-        window.set_default_size(500, -1)
-        window.connect("destroy", Gtk.main_quit, "WM destroy")
+        self.window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+        self.window.set_title("Player")
+        self.window.set_default_size(500, -1)
+        self.window.connect("destroy", Gtk.main_quit, "WM destroy")
         vbox = Gtk.VBox()
-        window.add(vbox)
+        self.window.add(vbox)
         self.entry = Gtk.Entry()
         self.entry.set_text("/home/userx/tlc.flac")
         vbox.pack_start(self.entry, False, False, 0)
@@ -44,10 +44,13 @@ class GTK_Main:
         forward_button = Gtk.Button(label="Forward")
         forward_button.connect("clicked", self.forward_callback)
         buttonbox.add(forward_button)
+        open_button = Gtk.Button(label="Open")
+        open_button.connect("clicked", self.on_file_clicked)
+        buttonbox.add(open_button)
         self.time_label = Gtk.Label()
         self.time_label.set_text("00:00 / 00:00")
         hbox.add(self.time_label)
-        window.show_all()
+        self.window.show_all()
         
         self.player = Gst.ElementFactory.make("playbin", "player")
         fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
@@ -56,6 +59,30 @@ class GTK_Main:
         bus = self.player.get_bus()
         bus.add_signal_watch()
         bus.connect("message", self.on_message)
+
+    def on_file_clicked(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="File selector", parent=self.window, action=Gtk.FileChooserAction.OPEN
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+
+        #self.add_filters(dialog)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.entry.set_text(dialog.get_filename())
+            #print("Open clicked")
+            #print("File selected: " + dialog.get_filename())
+        #elif response == Gtk.ResponseType.CANCEL:
+            #print("Cancel clicked")
+
+        dialog.destroy()
+
         
     def start_stop(self, w):
         if self.button.get_label() == "Start":
@@ -71,6 +98,7 @@ class GTK_Main:
             self.player.set_state(Gst.State.NULL)
             self.button.set_label("Start")
             self.time_label.set_text("00:00 / 00:00")
+            self.h_scale.set_value(0)
 
     def change_label(self, newtext):
         self.time_label.set_text(newtext)
